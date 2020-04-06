@@ -11,13 +11,14 @@ function App() {
 
       <body className="App-body">
         <p>Welcome to my personal website!</p>
+        
 
       </body>
 
-      <footer className="App-footer">
+      <div className="App-footer">
         <p> <a className="link" href = "mailto: rahul.pen24@gmail.com">Email</a> <a className="link" target="_blank" rel="noopener noreferrer" href="https://www.linkedin.com/in/rahul-pendyala-4a4060163/"> Linkedin</a></p>  
-        <p>Under Construction - Built in quarantine</p>
-      </footer>
+        <p>Under Construction - Built under self-isolation</p>
+      </div>
     </div>
   );
 }
