@@ -15,7 +15,7 @@ function App() {
       </body>
 
       <footer className="App-footer">
-        <p> <a className="link" href = "mailto: rahul.pen24@gmail.com">Email</a> <a className="link" target="_blank" href="https://www.linkedin.com/in/rahul-pendyala-4a4060163/"> Linkedin</a></p>  
+        <p> <a className="link" href = "mailto: rahul.pen24@gmail.com">Email</a> <a className="link" target="_blank" rel="noopener noreferrer" href="https://www.linkedin.com/in/rahul-pendyala-4a4060163/"> Linkedin</a></p>  
         <p>Under Construction - Built in quarantine</p>
       </footer>
     </div>
