@@ -36,7 +36,7 @@ function App() {
             </svg>
           </a>
         </p>  
-        <p>Under Construction - Built under self-isolation</p>
+        <p>Under Construction</p>
       </div>
     </div>
   );
