@@ -1,7 +1,14 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import './App.css';
 
-const EMAIL = 'rahul.pen24@gmail.com';
+// Assembled at runtime so the address never appears as a single literal in
+// the shipped bundle or the initial DOM, defeating regex-based harvesters.
+// Array joins are used because minifiers constant-fold plain string concatenation.
+const EMAIL_PARTS = ['rahul', 'pen24', 'gmail', 'com'];
+const buildEmail = () =>
+  [EMAIL_PARTS.slice(0, 2).join('.'), EMAIL_PARTS.slice(2).join('.')].join(String.fromCharCode(64));
+const buildMailto = () => ['mail', 'to', ':'].join('') + buildEmail();
+
 const GITHUB_URL = 'https://github.com/rahulpen';
 const LINKEDIN_URL = 'https://www.linkedin.com/in/rahul-pendyala-4a4060163/';
 
@@ -25,9 +32,7 @@ const Arrow: React.FC = () => (
 );
 
 export const App: React.FC = () => {
-  const [copied, setCopied] = useState(false);
   const sceneRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     const scene = sceneRef.current;
@@ -51,16 +56,13 @@ export const App: React.FC = () => {
     };
   }, []);
 
-  useEffect(() => () => window.clearTimeout(timeoutRef.current), []);
-
-  const handleCopyEmail = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(EMAIL);
-      setCopied(true);
-      window.clearTimeout(timeoutRef.current);
-      timeoutRef.current = window.setTimeout(() => setCopied(false), 1800);
-    } catch {
-      window.location.href = `mailto:${EMAIL}`;
+  // Attach the mailto href only once the visitor shows intent (hover, focus,
+  // or click), so it is absent from the DOM a scraper sees on page load.
+  const revealEmail = useCallback((e: React.SyntheticEvent<HTMLAnchorElement>) => {
+    const el = e.currentTarget;
+    if (!el.getAttribute('href')) {
+      el.href = buildMailto();
+      el.title = buildEmail();
     }
   }, []);
 
@@ -94,20 +96,18 @@ export const App: React.FC = () => {
 
         <footer className="bottombar">
           <nav className="links reveal" style={{ '--i': 4 } as React.CSSProperties} aria-label="Contact">
-            <button
-              type="button"
+            <a
               className="link"
-              onClick={handleCopyEmail}
-              aria-label="Copy email address"
-              data-copied={copied || undefined}
+              role="link"
+              tabIndex={0}
+              onPointerEnter={revealEmail}
+              onFocus={revealEmail}
+              onClick={revealEmail}
+              aria-label="Email Rahul Pendyala"
             >
-              <span className="link-label">
-                <span className="link-text">{EMAIL}</span>
-                <span className="link-text link-text-alt" aria-hidden="true">
-                  Copied to clipboard
-                </span>
-              </span>
-            </button>
+              <span className="link-text">Email</span>
+              <Arrow />
+            </a>
             <a
               className="link"
               href={GITHUB_URL}

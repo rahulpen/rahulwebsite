@@ -1,20 +1,16 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import App from './App';
 
-describe('App', () => {
-  beforeEach(() => {
-    Object.assign(navigator, {
-      clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
-    });
-  });
+const EXPECTED_EMAIL = ['rahul.pen24', 'gmail.com'].join('@');
 
+describe('App', () => {
   it('renders Rahul Pendyala and role', () => {
     render(<App />);
     expect(
       screen.getByRole('heading', { level: 1, name: /Rahul Pendyala/i })
     ).toBeInTheDocument();
-    expect(screen.getAllByText(/Software Engineer/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Software Engineer/i)).toBeInTheDocument();
   });
 
   it('renders contact links and under construction status', () => {
@@ -28,14 +24,19 @@ describe('App', () => {
       'href',
       'https://github.com/rahulpen'
     );
-    expect(screen.getByText(/rahul.pen24@gmail.com/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Email$/)).toBeInTheDocument();
   });
 
-  it('copies the email address to the clipboard', async () => {
-    render(<App />);
-    const button = screen.getByLabelText(/Copy email address/i);
-    fireEvent.click(button);
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('rahul.pen24@gmail.com');
-    await waitFor(() => expect(button).toHaveAttribute('data-copied', 'true'));
+  it('does not expose the email address until the visitor interacts', () => {
+    const { container } = render(<App />);
+    expect(container.innerHTML).not.toContain(EXPECTED_EMAIL);
+    expect(container.innerHTML).not.toContain('mailto:');
+
+    const link = screen.getByLabelText(/Email Rahul Pendyala/i);
+    expect(link).not.toHaveAttribute('href');
+
+    fireEvent.focus(link);
+    expect(link).toHaveAttribute('href', `mailto:${EXPECTED_EMAIL}`);
+    expect(link).toHaveAttribute('title', EXPECTED_EMAIL);
   });
 });

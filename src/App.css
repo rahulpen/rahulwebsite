@@ -229,34 +229,6 @@ body {
   transform: translate(2px, -2px);
 }
 
-/* Copy-to-clipboard label swap */
-.link-label {
-  display: grid;
-}
-
-.link-label > .link-text {
-  grid-area: 1 / 1;
-  transition:
-    transform 0.4s var(--ease-out),
-    opacity 0.3s var(--ease-out);
-}
-
-.link-text-alt {
-  opacity: 0;
-  transform: translateY(0.6em);
-  color: var(--fg-muted);
-}
-
-.link[data-copied] .link-text:not(.link-text-alt) {
-  opacity: 0;
-  transform: translateY(-0.6em);
-}
-
-.link[data-copied] .link-text-alt {
-  opacity: 1;
-  transform: translateY(0);
-}
-
 /* Status */
 .status {
   display: inline-flex;
@@ -345,8 +317,7 @@ body {
 
   .link,
   .link::after,
-  .link-arrow,
-  .link-label > .link-text {
+  .link-arrow {
     transition: none;
   }
 
