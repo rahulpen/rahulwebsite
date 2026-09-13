@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import App from './App';
+
+const EXPECTED_EMAIL = ['rahul.pen24', 'gmail.com'].join('@');
 
 describe('App', () => {
   it('renders Rahul Pendyala and role', () => {
@@ -22,6 +24,19 @@ describe('App', () => {
       'href',
       'https://github.com/rahulpen'
     );
-    expect(screen.getByText(/rahul.pen24@gmail.com/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Email$/)).toBeInTheDocument();
+  });
+
+  it('does not expose the email address until the visitor interacts', () => {
+    const { container } = render(<App />);
+    expect(container.innerHTML).not.toContain(EXPECTED_EMAIL);
+    expect(container.innerHTML).not.toContain('mailto:');
+
+    const link = screen.getByLabelText(/Email Rahul Pendyala/i);
+    expect(link).not.toHaveAttribute('href');
+
+    fireEvent.focus(link);
+    expect(link).toHaveAttribute('href', `mailto:${EXPECTED_EMAIL}`);
+    expect(link).toHaveAttribute('title', EXPECTED_EMAIL);
   });
 });
