@@ -3,26 +3,25 @@ import { render, screen } from '@testing-library/react';
 import App from './App';
 
 describe('App', () => {
-  it('renders Rahul Pendyala and Software Engineer title', () => {
+  it('renders Rahul Pendyala and role', () => {
     render(<App />);
-    expect(screen.getByText(/Rahul Pendyala/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: /Rahul Pendyala/i })
+    ).toBeInTheDocument();
     expect(screen.getByText(/Software Engineer/i)).toBeInTheDocument();
   });
 
-  it('renders social links and under construction notice', () => {
+  it('renders contact links and under construction status', () => {
     render(<App />);
     expect(screen.getByText(/Under Construction/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Email Rahul Pendyala/i)).toHaveAttribute(
-      'href',
-      'mailto:rahul.pen24@gmail.com'
-    );
-    expect(screen.getByLabelText(/LinkedIn/i)).toHaveAttribute(
+    expect(screen.getByLabelText(/Rahul Pendyala LinkedIn/i)).toHaveAttribute(
       'href',
       'https://www.linkedin.com/in/rahul-pendyala-4a4060163/'
     );
-    expect(screen.getByLabelText(/GitHub/i)).toHaveAttribute(
+    expect(screen.getByLabelText(/Rahul Pendyala GitHub/i)).toHaveAttribute(
       'href',
       'https://github.com/rahulpen'
     );
+    expect(screen.getByText(/rahul.pen24@gmail.com/i)).toBeInTheDocument();
   });
 });
