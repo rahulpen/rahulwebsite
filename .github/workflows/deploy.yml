@@ -7,47 +7,79 @@ on:
   pull_request:
     branches:
       - main
+  schedule:
+    # Daily check to deploy any auto-merged Dependabot commits on main
+    - cron: '17 9 * * *'
   workflow_dispatch:
 
 permissions:
   contents: read
+  deployments: read
   pages: write
   id-token: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
     steps:
+      - name: Check if scheduled deploy is needed
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          if [ "$EVENT_NAME" != "schedule" ]; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          DEPLOYED_SHA=$(gh api "repos/$REPO/deployments?environment=github-pages&per_page=1" -q '.[0].sha' || true)
+          if [ "$DEPLOYED_SHA" = "$HEAD_SHA" ]; then
+            echo "Commit $HEAD_SHA is already deployed; skipping scheduled rebuild."
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "New commit $HEAD_SHA (last deployed: ${DEPLOYED_SHA:-none}); proceeding with deploy."
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout repository
+        if: steps.check.outputs.should_deploy == 'true'
         uses: actions/checkout@v4
 
       - name: Set up Node.js
+        if: steps.check.outputs.should_deploy == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'npm'
 
       - name: Install dependencies
+        if: steps.check.outputs.should_deploy == 'true'
         run: npm install
 
       - name: Run tests
+        if: steps.check.outputs.should_deploy == 'true'
         run: npm test
 
       - name: Build site
+        if: steps.check.outputs.should_deploy == 'true'
         run: npm run build
 
       - name: Configure Pages
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        if: github.event_name != 'pull_request' && steps.check.outputs.should_deploy == 'true'
         uses: actions/configure-pages@v5
 
       - name: Upload Pages artifact
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        if: github.event_name != 'pull_request' && steps.check.outputs.should_deploy == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
   deploy:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: github.event_name != 'pull_request' && needs.build.outputs.should_deploy == 'true'
     concurrency:
       group: "pages"
       cancel-in-progress: false
